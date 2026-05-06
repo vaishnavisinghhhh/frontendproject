@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Gallery | Your Canvas</title>
+
+    <!-- Premium Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- GSAP for transitions -->
+    <script src="https://unpkg.com/gsap@3/dist/gsap.min.js"></script>
+
+    <!-- Custom Theme -->
+    <link rel="stylesheet" href="theme.css">
+
+    <style>
+        @font-face {
+            font-family: 'TAN Meringue';
+            src: url('TAN-Meringue-Font/TAN-Meringue-Font/TAN MERINGUE.woff2') format('woff2'),
+                 url('TAN-Meringue-Font/TAN-Meringue-Font/TAN MERINGUE.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        .font-display { font-family: 'TAN Meringue', 'Didot', serif; }
+        .font-editorial { font-family: 'Cormorant Garamond', 'Garamond', serif; }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, sans-serif;
+            overflow: auto; 
+            min-height: 100vh;
+            opacity: 0;
+            margin: 0;
+        }
+
+        /* Subtle glowing background effect */
+        .bg-glow {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(255, 244, 194, 0.4) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Back button */
+        .back-btn {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            color: var(--text-muted);
+            font-size: 1rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: color 0.3s, transform 0.3s;
+            cursor: pointer;
+            z-index: 50;
+        }
+
+        .back-btn:hover {
+            color: var(--text-main);
+            transform: translateX(-5px);
+        }
+
+        /* Toolbar */
+        .toolbar {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 50;
+            display: flex;
+            gap: 1rem;
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            padding: 0.75rem 1.5rem;
+            border-radius: 999px;
+            border: 1px solid var(--border-soft);
+            box-shadow: var(--shadow-light);
+        }
+
+        /* Sticker Panel */
+        .sticker-panel {
+            position: fixed;
+            bottom: 6rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-soft);
+            border-radius: 1rem;
+            padding: 1rem;
+            display: none;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.5rem;
+            z-index: 60;
+            box-shadow: var(--shadow-light);
+        }
+        
+        .sticker-btn {
+            font-size: 1.8rem;
+            background: transparent;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            padding: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .sticker-btn:hover {
+            transform: scale(1.2);
+            background: rgba(255,255,255,0.1);
+        }
+
+        .tool-btn {
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid var(--border-soft);
+            color: var(--text-main);
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tool-btn:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Canvas Area */
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5000px;
+            height: 5000px;
+            z-index: 10;
+        }
+
+        /* Canvas Items */
+        .canvas-item {
+            position: absolute;
+            /* Will be set by inline styles for position */
+            transform-origin: center;
+            outline: 1px solid transparent;
+            transition: outline-color 0.2s;
+        }
+
+        .canvas-item:hover, .canvas-item.active {
+            outline-color: rgba(255, 255, 255, 0.2);
+            z-index: 40; /* High z-index when interacting */
+        }
+
+        .drag-handle {
+            position: absolute;
+            top: -1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            width: 2rem;
+            height: 0.4rem;
+            border-radius: 1rem;
+            cursor: grab;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 20;
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: -1.5rem;
+            right: -1.5rem;
+            background: rgba(255, 0, 0, 0.2);
+            color: #ff6b6b;
+            border: none;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.2s;
+            z-index: 20;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        .delete-btn:hover {
+            background: rgba(255, 0, 0, 0.5);
+            color: white;
+        }
+
+        .canvas-item:hover .drag-handle,
+        .canvas-item:hover .delete-btn {
+            opacity: 1;
+        }
+
+        /* Formatting elements */
+        .item-text-content {
+            padding: 0.5rem;
+            min-width: 100px;
+            outline: none; /* remove normal focus outline */
+        }
+
+        .item-text-content:empty::before {
+            content: "Enter text...";
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .item-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            pointer-events: none; /* Prevent image drag behavior */
+        }
+
+        /* Resizing wrapper for images */
+        .resize-wrapper {
+            resize: both;
+            overflow: hidden;
+            min-width: 100px;
+            min-height: 100px;
+            position: relative; /* ensure it stays inside bounds */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #050505; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        
+    </style>
+</head>
+
+<body>
+
+    <div class="bg-glow"></div>
+
+    <button onclick="transitionTo('dashboard.html')" class="back-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+        </svg>
+        Back
+    </button>
+
+    <!-- Breadcrumbs -->
+    <nav class="fixed top-8 left-1/2 -translate-x-1/2 text-xs font-medium tracking-widest uppercase flex items-center z-50" style="color: #6b7280;">
+        <a href="index.html" class="hover:text-gray-800 transition" style="color: #6b7280;">Home</a>
+        <span class="mx-2" style="color: #9ca3af;">/</span>
+        <a href="dashboard.html" class="hover:text-gray-800 transition" style="color: #6b7280;">Dashboard</a>
+        <span class="mx-2" style="color: #9ca3af;">/</span>
+        <span style="color: #374151;">Gallery</span>
+    </nav>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <button class="tool-btn" onclick="addText()">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            Text
+        </button>
+        <button class="tool-btn" onclick="document.getElementById('file-upload').click()">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            Photo
+        </button>
+        <input type="file" id="file-upload" class="hidden" accept="image/*" onchange="handleImageUpload(event)">
+        
+        <button class="tool-btn" onclick="toggleStickers()">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            Stickers
+        </button>
+
+        <div class="w-px h-6 bg-white/20 self-center mx-2"></div>
+        
+        <button class="tool-btn text-red-400 hover:text-red-300 border-red-500/30 hover:bg-red-500/10" onclick="clearCanvas()">
+            Clear
+        </button>
+        <button class="tool-btn text-green-400 hover:text-green-300 border-green-500/30 hover:bg-green-500/10" onclick="saveCanvas()">
+            Save Layout
+        </button>
+    </div>
+
+    <!-- Sticker Panel -->
+    <div id="sticker-panel" class="sticker-panel">
+        <!-- populated via js -->
+    </div>
+
+    <!-- The Canvas -->
+    <div id="canvas">
+        <!-- Instructional text on empty canvas (will not be saved if deleted) -->
+        <div id="empty-state" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center text-gray-400 pointer-events-none select-none">
+            <h2 class="font-editorial text-4xl mb-2 text-main opacity-20">Your Editorial Canvas</h2>
+            <p>Add texts and photos to build your personalized gallery.</p>
+        </div>
+    </div>
+
+    <script src="gallery.js" defer></script>
+
+    <!-- Interactive Custom Cursor -->
+    <script src="cursor.js"></script>
+</body>
+
+</html>
+
+

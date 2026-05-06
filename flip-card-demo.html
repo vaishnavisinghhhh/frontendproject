@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Reveal Card | Thirty Days to Thrive</title>
+    <style>
+        :root {
+            --card-width: 300px;
+            --card-height: 400px;
+            --accent-color: #B9C6FF;
+        }
+
+        body {
+            background-color: #FAF9F6;
+            font-family: 'Inter', system-ui, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        /* --- SIMPLE REVEAL COMPONENT --- */
+        .reveal-card {
+            width: var(--card-width);
+            height: var(--card-height);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            inset: 0;
+            padding: 2rem;
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.03);
+            border: 1px solid rgba(0,0,0,0.05);
+            /* NO TRANSITION - Instant swap */
+            transition: none !important;
+        }
+
+        /* FRONT SIDE */
+        .card-front {
+            background-color: white;
+            color: #333;
+            z-index: 2;
+            opacity: 1;
+        }
+
+        /* BACK SIDE */
+        .card-back {
+            background-color: var(--accent-color);
+            color: white;
+            z-index: 1;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Trigger: Hover (Instant Show/Hide) */
+        .reveal-card:hover .card-front {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .reveal-card:hover .card-back {
+            opacity: 1;
+            pointer-events: auto;
+            box-shadow: 0 30px 70px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Content styling */
+        h2 { margin-bottom: 0.5rem; font-size: 1.8rem; }
+        p { color: #888; font-weight: 300; line-height: 1.6; }
+        .card-back p { color: rgba(255,255,255,0.85); }
+
+    </style>
+</head>
+<body>
+
+    <!-- Minimal HTML Structure -->
+    <div class="reveal-card">
+        <div class="card-front">
+            <h2>The Challenge</h2>
+            <p>Hover to discover today's mindful practice.</p>
+        </div>
+        <div class="card-back">
+            <h2>Silent Breath</h2>
+            <p>Observe your breath for 5 minutes without trying to change it. Just notice the flow.</p>
+        </div>
+    </div>
+
+    <!-- Demonstrate Grid Readiness -->
+    <div class="reveal-card">
+        <div class="card-front">
+            <h2>The Growth</h2>
+            <p>Ready to level up your focus and discipline?</p>
+        </div>
+        <div class="card-back">
+            <h2>The 10m Rule</h2>
+            <p>When you feel like quitting, commit to just 10 more minutes of deep work. It changes everything.</p>
+        </div>
+    </div>
+
+</body>
+</html>

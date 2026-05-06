@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>30 Day Bucket List | 30 Days to Thrive</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- GSAP + ScrollTrigger -->
+    <script src="https://unpkg.com/gsap@3/dist/gsap.min.js"></script>
+    <script src="https://unpkg.com/gsap@3/dist/ScrollTrigger.min.js"></script>
+
+    <!-- Custom Theme -->
+    <link rel="stylesheet" href="theme.css">
+
+    <style>
+        @font-face {
+            font-family: 'TAN Meringue';
+            src: url('TAN-Meringue-Font/TAN-Meringue-Font/TAN MERINGUE.woff2') format('woff2'),
+                url('TAN-Meringue-Font/TAN-Meringue-Font/TAN MERINGUE.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        .font-display {
+            font-family: 'TAN Meringue', 'Didot', serif;
+        }
+
+        .font-editorial {
+            font-family: 'Cormorant Garamond', 'Garamond', serif;
+        }
+
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            height: 100%;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, sans-serif;
+            overflow-x: hidden;
+            opacity: 0;
+            min-height: 100%;
+        }
+
+        /* ═══════════════════════════════
+           ANIMATED BACKGROUND LAYER
+        ═══════════════════════════════ */
+        .bg-layer {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+            background-color: var(--bg-base);
+        }
+
+        .bg-base {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            will-change: transform;
+            transform: scale(1.08); /* extra size for parallax margin */
+            opacity: 0.1;
+        }
+
+        .bg-drift {
+            position: absolute;
+            inset: -20px;
+            z-index: 2;
+            width: calc(100% + 40px);
+            height: calc(100% + 40px);
+            object-fit: cover;
+            object-position: center;
+            opacity: 0.05;
+            mix-blend-mode: multiply;
+            will-change: transform;
+            animation: drift 14s ease-in-out infinite;
+        }
+
+        @keyframes drift {
+            0%, 100% { transform: translate(0, 0) scale(1.1); }
+            25%      { transform: translate(6px, -12px) scale(1.11); }
+            50%      { transform: translate(-4px, -16px) scale(1.10); }
+            75%      { transform: translate(5px, -6px) scale(1.09); }
+        }
+
+        .bg-overlay-dark {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none;
+            background: radial-gradient(circle at 30% 20%, rgba(255, 244, 194, 0.45) 0%, transparent 60%);
+        }
+
+        /* Animated light sweep */
+        .bg-light-sweep {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background: linear-gradient(120deg, transparent 0%, transparent 38%,
+                    rgba(255, 255, 255, 0.4) 46%, rgba(255, 255, 255, 0.6) 50%,
+                    rgba(255, 255, 255, 0.4) 54%, transparent 62%, transparent 100%);
+            background-size: 300% 100%;
+            animation: lightSweep 12s ease-in-out infinite;
+        }
+
+        /* Glow pulse at center */
+        .bg-glow-pulse {
+            position: absolute;
+            z-index: 1;
+            top: 35%;
+            left: 50%;
+            width: 500px;
+            height: 500px;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(220, 238, 255, 0.5) 0%, transparent 70%);
+            pointer-events: none;
+            animation: glowPulse 9s ease-in-out infinite;
+        }
+
+        @keyframes glowPulse {
+
+            0%,
+            100% {
+                opacity: 0.4;
+                transform: translate(-50%, -50%) scale(1);
+            }
+
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.15);
+            }
+        }
+
+        /* Particles */
+        #particleCanvas {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ═══════════════════════════════
+           PAGE
+        ═══════════════════════════════ */
+        .page {
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            padding-bottom: 4rem;
+            background: transparent;
+        }
+
+        /* ═══════════════════════════════
+           BACK BUTTON
+        ═══════════════════════════════ */
+        .back-btn {
+            position: fixed;
+            top: 2rem;
+            left: 2rem;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: color 0.3s, transform 0.3s;
+            cursor: pointer;
+            z-index: 60;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .back-btn:hover {
+            color: var(--text-main);
+            transform: translateX(-5px);
+        }
+
+        /* ═══════════════════════════════
+           DAY CARDS
+        ═══════════════════════════════ */
+        .day-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 1.15rem;
+            cursor: pointer;
+            min-height: 130px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            will-change: transform;
+            transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+            box-shadow: var(--shadow-light);
+        }
+
+        /* Subtle inner gradient */
+        .day-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(160deg, rgba(255, 255, 255, 0.5) 0%, transparent 40%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .day-card:hover {
+            transform: translateY(-6px) scale(1.05);
+            box-shadow: var(--shadow-medium);
+            border-color: var(--color-soft-sky-blue);
+            background: white;
+        }
+
+        .day-card>* {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ─── Filled card (has task) ─── */
+        .day-card.filled {
+            background: rgba(255, 255, 255, 0.7);
+            border-color: var(--border-soft);
+        }
+
+        /* ─── Completed state ─── */
+        .day-card.completed {
+            border-color: var(--color-sage-green);
+        }
+
+        .day-card.completed::before {
+            background: linear-gradient(160deg, rgba(210, 234, 209, 0.2) 0%, transparent 40%);
+        }
+
+        .completion-check {
+            position: absolute;
+            top: 0.65rem;
+            right: 0.65rem;
+            width: 20px;
+            height: 20px;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(221, 234, 209, 0.5);
+            border: 1px solid var(--color-sage-green);
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .day-card.completed .completion-check {
+            opacity: 1;
+        }
+
+        .completion-check svg {
+            width: 11px;
+            height: 11px;
+            stroke: #4CAF50;
+            fill: none;
+            stroke-width: 2.5;
+        }
+
+        .day-number {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .motto-text {
+            color: var(--text-main);
+            font-size: 0.9rem;
+            font-weight: 400;
+            line-height: 1.45;
+            flex-grow: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            word-wrap: break-word;
+        }
+
+        .day-card.completed .motto-text {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        .motto-placeholder {
+            color: rgba(255, 255, 255, 0.15);
+            font-style: italic;
+            font-size: 0.85rem;
+        }
+
+        /* ═══════════════════════════════
+           MODAL
+        ═══════════════════════════════ */
+        #edit-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.82);
+            backdrop-filter: blur(12px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s ease;
+        }
+
+        #edit-modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: white;
+            border: 1px solid var(--border-soft);
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            width: 90%;
+            max-width: 480px;
+            transform: scale(0.88) translateY(20px);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: var(--shadow-medium);
+        }
+
+        #edit-modal.active .modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-input {
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            color: var(--text-main);
+            padding: 1rem;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-family: inherit;
+            outline: none;
+            resize: none;
+            transition: border-color 0.3s, background 0.3s;
+        }
+
+        .modal-input:focus {
+            border-color: var(--color-soft-sky-blue);
+            background: white;
+        }
+
+        .modal-input::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .modal-input::-webkit-scrollbar-thumb {
+            background: var(--border-soft);
+            border-radius: 3px;
+        }
+
+        .notes-input {
+            width: 100%;
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            color: var(--text-muted);
+            padding: 0.85rem;
+            border-radius: 0.75rem;
+            font-size: 0.88rem;
+            font-family: inherit;
+            outline: none;
+            resize: vertical;
+            min-height: 70px;
+            transition: border-color 0.3s, background 0.3s;
+        }
+
+        .notes-input:focus {
+            border-color: var(--color-soft-sky-blue);
+            background: white;
+        }
+
+        /* Toggle button */
+        .toggle-complete {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            user-select: none;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.5);
+            transition: color 0.3s;
+        }
+
+        .toggle-complete:hover {
+            color: rgba(74, 222, 128, 0.9);
+        }
+
+        .toggle-box {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: border-color 0.3s, background 0.3s;
+        }
+
+        .toggle-complete.checked .toggle-box {
+            border-color: rgba(74, 222, 128, 0.6);
+            background: rgba(74, 222, 128, 0.15);
+        }
+
+        .toggle-box svg {
+            width: 10px;
+            height: 10px;
+            opacity: 0;
+            stroke: rgba(74, 222, 128, 0.9);
+            fill: none;
+            stroke-width: 2.5;
+            transition: opacity 0.2s;
+        }
+
+        .toggle-complete.checked .toggle-box svg {
+            opacity: 1;
+        }
+
+        /* Crumb */
+        .crumb a {
+            color: #6b7280;
+            transition: color 0.3s;
+        }
+
+        .crumb a:hover {
+            color: #374151;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ═══ ANIMATED BACKGROUND LAYER ═══ -->
+    <div class="bg-layer" id="bgLayer">
+        <div class="bg-overlay-dark"></div>
+        <div class="bg-glow-pulse"></div>
+        <div class="bg-light-sweep"></div>
+        <canvas id="particleCanvas"></canvas>
+    </div>
+
+    <!-- ═══ PAGE ═══ -->
+    <div class="page flex flex-col items-center p-6 sm:p-12 relative">
+
+        <button onclick="transitionTo('dashboard.html')" class="back-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                stroke="currentColor" class="w-4 h-4">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+            </svg>
+            Back
+        </button>
+
+        <!-- Header -->
+        <div class="text-center max-w-2xl mb-12 mt-16 header-text">
+            <nav
+                class="crumb text-xs font-medium mb-5 tracking-widest uppercase flex justify-center items-center gap-2">
+                <a href="index.html">Home</a>
+                <span class="text-gray-400">/</span>
+                <a href="dashboard.html">Dashboard</a>
+                <span class="text-gray-400">/</span>
+                <span style="color: #374151;">Bucket List</span>
+            </nav>
+            <h1 class="font-display text-4xl md:text-5xl lg:text-6xl font-bold mb-4 hero-title"
+                style="letter-spacing:-0.02em; text-shadow: 0 0 40px rgba(255,255,255,0.06);">
+                30 Day Bucket List
+            </h1>
+            <p class="font-editorial text-gray-400 text-lg md:text-xl leading-relaxed italic font-light tracking-wide">
+                Set a defining motto or goal for each day, and make it count.
+            </p>
+        </div>
+
+        <!-- Calendar Grid -->
+        <div id="calendar-grid"
+            class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 gap-5 w-full max-w-6xl">
+        </div>
+
+    </div>
+
+    <!-- ═══ EDIT MODAL ═══ -->
+    <div id="edit-modal">
+        <div class="modal-content relative">
+            <button id="close-modal"
+                class="absolute top-4 right-5 text-gray-500 hover:text-white transition text-xl">&times;</button>
+
+            <h2 id="modal-title" class="font-editorial text-2xl font-semibold mb-5 text-main"></h2>
+
+            <label class="block text-xs uppercase tracking-widest text-muted mb-2">Task / Motto</label>
+            <textarea id="motto-input" rows="2" class="modal-input mb-4"
+                placeholder="E.g., Drink 3 liters of water and run 5km today..."></textarea>
+
+            <label class="block text-xs uppercase tracking-widest text-muted mb-2">Notes (optional)</label>
+            <textarea id="notes-input" rows="3" class="notes-input mb-5"
+                placeholder="Any extra details, reflections, or checklist items..."></textarea>
+
+            <!-- Mark complete toggle -->
+            <div id="toggle-complete" class="toggle-complete mb-6">
+                <div class="toggle-box">
+                    <svg viewBox="0 0 12 12">
+                        <polyline points="2 6 5 9 10 3" />
+                    </svg>
+                </div>
+                <span>Mark as completed</span>
+            </div>
+
+            <div class="flex justify-end gap-3">
+                <button id="cancel-btn"
+                    class="px-5 py-2 rounded-full text-muted hover:text-main bg-main/5 hover:bg-main/10 transition font-medium text-sm">Cancel</button>
+                <button id="save-btn"
+                    class="px-6 py-2 rounded-full text-white bg-peach hover:scale-105 transition font-semibold text-sm" style="background-color: var(--color-muted-peach);">Save</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="bucket-list.js" defer></script>
+
+    <script src="cursor.js"></script>
+</body>
+
+</html>
+

@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Dual You | AI Verdict</title>
+
+    <!-- Premium Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- GSAP -->
+    <script src="https://unpkg.com/gsap@3/dist/gsap.min.js"></script>
+
+    <!-- Custom Theme -->
+    <link rel="stylesheet" href="theme.css">
+
+    <style>
+        @font-face {
+            font-family: 'TAN Meringue';
+            src: url('TAN-Meringue-Font/TAN-Meringue-Font/TAN MERINGUE.woff2') format('woff2'),
+                 url('TAN-Meringue-Font/TAN-Meringue-Font/TAN MERINGUE.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        .font-display { font-family: 'TAN Meringue', 'Didot', serif; }
+        .font-editorial { font-family: 'Cormorant Garamond', 'Garamond', serif; }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+            opacity: 0;
+            margin: 0;
+        }
+
+        /* 3D Parallax Background Layer */
+        .parallax-bg {
+            position: fixed;
+            top: -10%; left: 0; width: 100%; height: 120%;
+            background-color: var(--bg-base);
+            background-size: cover;
+            background-position: center;
+            z-index: -2;
+            will-change: transform;
+            opacity: 0.1;
+        }
+
+        .bg-glow {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(255, 244, 194, 0.4) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .input-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            backdrop-filter: blur(10px);
+            transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+            box-shadow: var(--shadow-light);
+            border-radius: 1.5rem;
+        }
+
+        .input-card:focus-within.emotional {
+            border-color: var(--color-muted-peach);
+            box-shadow: 0 0 25px rgba(255, 214, 201, 0.3);
+            background: white;
+        }
+
+        .input-card:focus-within.intellectual {
+            border-color: var(--color-soft-sky-blue);
+            box-shadow: 0 0 25px rgba(220, 238, 255, 0.3);
+            background: white;
+        }
+
+        textarea {
+            background: transparent;
+            color: var(--text-main);
+            resize: none;
+            width: 100%;
+            height: 250px;
+            outline: none;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border-soft) transparent;
+        }
+
+        textarea::-webkit-scrollbar {
+            width: 6px;
+        }
+        textarea::-webkit-scrollbar-thumb {
+            background: var(--border-soft);
+            border-radius: 10px;
+        }
+
+        textarea::placeholder {
+            color: var(--text-muted);
+            opacity: 0.3;
+        }
+
+        /* Go back button styling */
+        .back-btn {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            color: var(--text-muted);
+            font-size: 1rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: color 0.3s, transform 0.3s;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .back-btn:hover {
+            color: var(--text-main);
+            transform: translateX(-5px);
+        }
+
+        .btn-verdict {
+            background: linear-gradient(90deg, var(--color-muted-peach), var(--color-soft-sky-blue));
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 214, 201, 0.4);
+        }
+
+        .btn-verdict:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 25px rgba(255, 214, 201, 0.6);
+        }
+
+        .btn-verdict::before {
+            content: "";
+            position: absolute;
+            top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn-verdict:hover::before {
+            left: 100%;
+        }
+
+        /* Verdict Modal Overlay */
+        .verdict-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .verdict-box {
+            background: white;
+            border: 1px solid var(--border-soft);
+            padding: 3rem;
+            border-radius: 1.5rem;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            transform: scale(0.9);
+            box-shadow: var(--shadow-medium);
+        }
+
+        .pulse-text {
+            animation: pulse-op 1.5s infinite alternate;
+        }
+
+        @keyframes pulse-op {
+            from { opacity: 0.4; }
+            to { opacity: 1; }
+        }
+        /* 2D Animated Floating Orbs */
+        .bg-particles {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(40px);
+            opacity: 0.15;
+            will-change: transform;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center p-6 sm:p-12 relative min-h-screen">
+
+    <div class="parallax-bg" id="parallax-bg"></div>
+    <div class="bg-particles" id="particles"></div>
+    <div class="bg-glow"></div>
+
+    <!-- Go Back -->
+    <button onclick="transitionTo('dashboard.html')" class="back-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+        </svg>
+        Back
+    </button>
+
+    <div class="text-center max-w-3xl mb-12 mt-16 header-text">
+        <nav class="text-xs font-medium text-muted mb-6 tracking-widest uppercase flex justify-center items-center">
+            <a href="index.html" class="hover:text-main transition">Home</a>
+            <span class="mx-2">/</span>
+            <a href="dashboard.html" class="hover:text-main transition">Dashboard</a>
+            <span class="mx-2">/</span>
+            <span class="text-main">The Dual You</span>
+        </nav>
+        <h1 class="font-display text-5xl md:text-6xl font-bold mb-4 tracking-tight text-main hero-title">The Dual You</h1>
+        <p class="text-muted text-lg leading-relaxed">
+            Consult the AI. Type what your heart feels on the left, and what your mind knows on the right. Let the intelligence find the balance.
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl inputs-container">
+        
+        <!-- Emotional Reasoning -->
+        <div class="input-card emotional p-6 rounded-2xl flex flex-col">
+            <h2 class="font-editorial text-2xl font-bold mb-4 text-[#F4A4D4]">
+                Emotional Reasoning
+            </h2>
+            <textarea id="emotional-input" placeholder="How do you feel about this? What does your intuition say? Don't hold back..."></textarea>
+        </div>
+
+        <!-- Intellectual Reasoning -->
+        <div class="input-card intellectual p-6 rounded-2xl flex flex-col">
+            <h2 class="font-editorial text-2xl font-bold mb-4 text-[#69D9D0]">
+                Intellectual Reasoning
+            </h2>
+            <textarea id="intellectual-input" placeholder="What are the facts? What does logic and reason dictate? Be objective..."></textarea>
+        </div>
+
+    </div>
+
+    <!-- Submit Button -->
+    <div id="verdict-btn-wrapper" class="w-full flex justify-center mt-14">
+        <button id="seek-verdict-btn" 
+                class="group relative overflow-hidden bg-gray-900 text-white px-8 py-4 rounded-full uppercase tracking-[0.25em] text-xs font-semibold transition-all duration-500 hover:scale-[1.03] shadow-[0_15px_40px_rgba(0,0,0,0.08)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex items-center justify-center">
+            <span class="relative z-10 flex items-center gap-4">
+                Seek Verdict
+                <i class="ph ph-arrow-right text-lg transform group-hover:translate-x-2 transition-transform duration-500"></i>
+            </span>
+            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+        </button>
+    </div>
+
+    <!-- Verdict Overlay -->
+    <div class="verdict-overlay" id="verdict-overlay">
+        <div class="verdict-box" id="verdict-box">
+            <h2 class="text-3xl font-bold mb-6 text-main" id="verdict-title">AI Processing...</h2>
+            <p class="text-xl text-muted leading-relaxed font-serif italic" id="verdict-text">
+                <span class="pulse-text">Weighing emotion against intellect...</span>
+            </p>
+            <button id="close-verdict-btn" class="mt-8 px-6 py-2 border border-main/20 hover:bg-main/5 rounded-full text-main transition opacity-0">
+                Acknowledge
+            </button>
+        </div>
+    </div>
+
+
+    <script src="dual-you.js" defer></script>
+    <script src="cursor.js"></script>
+</body>
+</html>
+
+

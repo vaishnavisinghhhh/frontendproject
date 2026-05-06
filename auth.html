@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In / Register - 30 Days to Thrive</title>
+    <link rel="stylesheet" href="auth.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <a href="index.html" class="back-btn z-[99999]" title="Back to Home">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4" style="width: 1rem; height: 1rem;">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/>
+        </svg>
+        Back
+    </a>
+    <div class="auth-container">
+        <!-- Hero Section -->
+        <div class="auth-hero">
+            <div class="glow-orb orb-1"></div>
+            <div class="glow-orb orb-2"></div>
+            
+            <div class="auth-hero-content">
+                <a href="index.html" class="logo">30 Days to Thrive</a>
+                <h1 class="motivational-text">Begin your journey to a better you.</h1>
+            </div>
+        </div>
+
+        <!-- Panel Section -->
+        <div class="auth-panel">
+            <div class="glass-card">
+                <div class="auth-tabs">
+                    <button class="tab-btn active" id="tab-login" onclick="switchTab('login')">Log In</button>
+                    <button class="tab-btn" id="tab-register" onclick="switchTab('register')">Register</button>
+                    <div class="tab-indicator" id="tab-indicator"></div>
+                </div>
+
+                <div class="forms-wrapper">
+                    <!-- Login Form -->
+                    <form class="auth-form active-form" id="login-form" onsubmit="handleLogin(event)">
+                        <div class="form-group">
+                            <label for="login-email">Email Address</label>
+                            <div class="input-wrapper">
+                                <i class="fa-regular fa-envelope input-icon"></i>
+                                <input type="email" id="login-email" placeholder="you@example.com" required>
+                            </div>
+                            <div class="error-msg">Please enter a valid email address.</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="login-password">Password</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-lock input-icon"></i>
+                                <input type="password" id="login-password" placeholder="••••••••" required>
+                                <button type="button" class="toggle-password" onclick="togglePassword('login-password')">
+                                    <i class="fa-regular fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-extras">
+                            <label class="checkbox-container">
+                                Remember me
+                                <input type="checkbox" id="remember-me">
+                                <span class="checkmark"></span>
+                            </label>
+                            <a href="#" class="forgot-link">Forgot Password?</a>
+                        </div>
+
+                        <button type="submit" class="primary-btn">Sign In</button>
+                        
+                        <div style="display: flex; align-items: center; margin: 1.5rem 0; color: #aaa; font-size: 0.8rem; text-transform: uppercase;">
+                            <div style="flex: 1; height: 1px; background: #eee;"></div>
+                            <span style="padding: 0 10px;">Or</span>
+                            <div style="flex: 1; height: 1px; background: #eee;"></div>
+                        </div>
+
+                        <a href="http://localhost:5000/auth/google" class="primary-btn" style="background: white; color: #333; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none;">
+                            <i class="fa-brands fa-google" style="color: #DB4437;"></i> Continue with Google
+                        </a>
+                    </form>
+
+                    <!-- Register Form -->
+                    <form class="auth-form" id="register-form" onsubmit="handleRegister(event)">
+                        <div class="form-group">
+                            <label for="register-name">Full Name</label>
+                            <div class="input-wrapper">
+                                <i class="fa-regular fa-user input-icon"></i>
+                                <input type="text" id="register-name" placeholder="Jane Doe" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="register-email">Email Address</label>
+                            <div class="input-wrapper">
+                                <i class="fa-regular fa-envelope input-icon"></i>
+                                <input type="email" id="register-email" placeholder="you@example.com" required>
+                            </div>
+                            <div class="error-msg" id="register-email-error">Please enter a valid email.</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="register-password">Password</label>
+                            <div class="input-wrapper">
+                                <i class="fa-solid fa-lock input-icon"></i>
+                                <input type="password" id="register-password" placeholder="••••••••" oninput="checkStrength(this.value)" required minlength="8">
+                                <button type="button" class="toggle-password" onclick="togglePassword('register-password')">
+                                    <i class="fa-regular fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="strength-meter">
+                                <div class="strength-bar" id="strength-bar"></div>
+                            </div>
+                            <span class="strength-text" id="strength-text">Minimum 8 characters</span>
+                        </div>
+
+                        <button type="submit" class="primary-btn">Create Account</button>
+                        
+                        <div style="display: flex; align-items: center; margin: 1.5rem 0; color: #aaa; font-size: 0.8rem; text-transform: uppercase;">
+                            <div style="flex: 1; height: 1px; background: #eee;"></div>
+                            <span style="padding: 0 10px;">Or</span>
+                            <div style="flex: 1; height: 1px; background: #eee;"></div>
+                        </div>
+
+                        <a href="http://localhost:5000/auth/google" class="primary-btn" style="background: white; color: #333; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none;">
+                            <i class="fa-brands fa-google" style="color: #DB4437;"></i> Continue with Google
+                        </a>
+                    </form>
+                </div>
+            </div>
+            <div class="copyright">© 2026 30 Days to Thrive. All rights reserved.</div>
+        </div>
+    </div>
+
+    <script src="auth.js" defer></script>
+    <script src="toast.js"></script>
+</body>
+</html>

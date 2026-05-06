@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health & Vitals | 30 Days to Thrive</title>
+
+    <!-- Premium Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- GSAP -->
+    <script src="https://unpkg.com/gsap@3/dist/gsap.min.js"></script>
+
+    <!-- Phosphor Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Custom Theme -->
+    <link rel="stylesheet" href="theme.css">
+
+    <style>
+        @font-face {
+            font-family: 'TAN Meringue';
+            src: url('TAN-Meringue-Font/TAN-Meringue-Font/TAN MERINGUE.woff2') format('woff2'),
+                 url('TAN-Meringue-Font/TAN-Meringue-Font/TAN MERINGUE.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+            font-display: swap;
+        }
+
+        .font-display { font-family: 'TAN Meringue', 'Didot', serif; }
+        .font-editorial { font-family: 'Cormorant Garamond', 'Garamond', serif; }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+            opacity: 0;
+            margin: 0;
+        }
+
+        .bg-glow {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(255, 244, 194, 0.4) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        /* Glassmorphic Card Base */
+        .glass-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            backdrop-filter: blur(20px);
+            border-radius: 1.8rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s, border-color 0.4s;
+            box-shadow: var(--shadow-light);
+        }
+
+        .metric-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 320px;
+            padding: 2.5rem 2rem;
+            text-align: center;
+        }
+
+        .glass-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-medium); }
+
+        /* Go back button */
+        .back-btn {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            color: var(--text-muted);
+            font-size: 1rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: color 0.3s, transform 0.3s;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .back-btn:hover {
+            color: var(--text-main);
+            transform: translateX(-5px);
+        }
+
+        /* Circular Progress styling */
+        .ring-container {
+            width: 140px; height: 140px; margin: 0 auto;
+            position: relative;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%;
+            background: conic-gradient(var(--fill-color) var(--percentage), rgba(0,0,0,0.03) 0);
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+
+        .ring-container::before {
+            content: "";
+            position: absolute;
+            inset: 12px;
+            border-radius: 50%;
+            background: white;
+            z-index: 1;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        }
+
+        .ring-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+        }
+
+        .ring-container:hover {
+            transform: scale(1.05) rotate(5deg);
+        }
+
+        /* Specific Cards Theming */
+        .card-steps:focus-within, .card-steps:hover { border-color: var(--color-sage-green); }
+        .card-calories:focus-within, .card-calories:hover { border-color: var(--color-muted-peach); }
+        .card-sleep:focus-within, .card-sleep:hover { border-color: var(--color-dusty-lavender); }
+        .card-water:focus-within, .card-water:hover { border-color: var(--color-soft-sky-blue); }
+
+        /* Remove input arrows */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+
+        /* ═══════════════════════════════
+           MONTHLY PIE GRID (30-DAY VIEW)
+        ═══════════════════════════════ */
+        .month-stage {
+            position: relative;
+            width: 100%;
+            min-height: 800px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 3rem;
+            z-index: 20;
+        }
+
+        .month-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2rem;
+            width: 100%;
+            max-width: 1200px;
+            justify-items: center;
+        }
+
+        /* Final Row Centering Logic */
+        .month-grid > div:nth-child(29) {
+            grid-column: 3;
+        }
+        .month-grid > div:nth-child(30) {
+            grid-column: 5;
+        }
+
+        @media (max-width: 1024px) { 
+            .month-grid { grid-template-columns: repeat(4, 1fr); }
+            .month-grid > div:nth-child(29), .month-grid > div:nth-child(30) { grid-column: auto; }
+        }
+        @media (max-width: 640px) { 
+            .month-grid { grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+        }
+
+        .pie-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.75rem;
+            width: 100%;
+        }
+
+        .day-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .pie-container {
+            width: 110px;
+            height: 110px;
+            position: relative;
+            cursor: pointer;
+            will-change: transform;
+            transition: scale 0.3s;
+        }
+
+        .pie-svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+            overflow: visible;
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.1));
+        }
+
+        .pie-slice {
+            stroke-width: 0;
+            cursor: pointer;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), filter 0.3s;
+        }
+
+        .pie-slice:hover {
+            filter: brightness(1.1) drop-shadow(0 0 10px var(--glow));
+            transform: scale(1.15);
+            z-index: 100;
+        }
+
+        .pie-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            background: white;
+            border-radius: 50%;
+            border: 1px solid var(--border-soft);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* Tooltip */
+        .pie-tooltip {
+            position: fixed;
+            pointer-events: none;
+            background: white;
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-soft);
+            padding: 0.8rem 1.1rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            color: var(--text-main);
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.2s, transform 0.2s;
+            box-shadow: var(--shadow-medium);
+        }
+
+        .pie-tooltip b { color: var(--tip-color, #333); font-weight: 800; }
+        .pie-tooltip.active { opacity: 1; transform: translateY(0); }
+
+    </style>
+</head>
+<body class="flex flex-col items-center p-6 sm:p-12 pb-32 relative min-h-screen">
+
+    <div class="bg-glow"></div>
+
+    <!-- Go Back -->
+    <button onclick="transitionTo('dashboard.html')" class="back-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+        </svg>
+        Back
+    </button>
+
+    <div class="text-center max-w-3xl mb-12 mt-16 header-text">
+        <nav class="text-xs font-medium text-gray-400 mb-6 tracking-widest uppercase flex justify-center items-center">
+            <a href="index.html" class="hover:text-main transition">Home</a>
+            <span class="mx-2">/</span>
+            <a href="dashboard.html" class="hover:text-main transition">Dashboard</a>
+            <span class="mx-2">/</span>
+            <span class="text-main">Monthly Tracker</span>
+        </nav>
+        <h1 class="font-display text-5xl md:text-6xl font-bold mb-4 tracking-tight hero-title">Monthly Health Map</h1>
+        <p class="text-gray-400 text-lg leading-relaxed mb-10">
+            Select a day below to update your metrics. Every entry is recorded in your 30-day visual ecosystem.
+        </p>
+
+        <!-- 30-Day Compact Selector -->
+        <div class="flex flex-wrap justify-center gap-2 max-w-2xl mx-auto mb-12 p-4 glass-card" id="daySelector">
+            <!-- generated 1-30 -->
+        </div>
+    </div>
+
+    <!-- Top Grid: 4 Core Metrics -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-7xl px-4 mt-8 cards-container">
+        
+        <!-- Steps -->
+        <div class="glass-card metric-card group cursor-text" onclick="document.getElementById('input-steps').focus()">
+            <h3 class="flex items-center gap-2 text-emerald-600 uppercase tracking-widest text-[0.65rem] font-black mb-8">
+                <i class="ph-bold ph-footprints text-base"></i> Daily Steps
+            </h3>
+            <div class="ring-container" id="ring-steps" style="--fill-color: var(--color-sage-green); --percentage: 0%;">
+                <div class="ring-content flex flex-col items-center">
+                    <input type="number" id="input-steps" value="0" class="block text-3xl font-bold text-main bg-transparent text-center w-28 outline-none border-b border-transparent focus:border-emerald-400/50 transition mb-1" placeholder="0">
+                    <span class="text-[0.6rem] text-muted uppercase tracking-widest font-black opacity-60">/ 10k Goal</span>
+                </div>
+            </div>
+            <p class="text-muted mt-8 text-xs font-bold uppercase tracking-widest group-focus-within:text-emerald-500/80 transition" id="msg-steps">Click to type</p>
+        </div>
+
+        <!-- Calories -->
+        <div class="glass-card metric-card group cursor-text" onclick="document.getElementById('input-calories').focus()">
+            <h3 class="flex items-center gap-2 text-orange-600 uppercase tracking-widest text-[0.65rem] font-black mb-8">
+                <i class="ph-bold ph-fire text-base"></i> Calories
+            </h3>
+            <div class="ring-container" id="ring-calories" style="--fill-color: #f87171; --percentage: 0%;">
+                <div class="ring-content flex flex-col items-center">
+                    <input type="number" id="input-calories" value="0" class="block text-3xl font-bold text-main bg-transparent text-center w-28 outline-none border-b border-transparent focus:border-orange-400/50 transition mb-1" placeholder="0">
+                    <span class="text-[0.6rem] text-muted uppercase tracking-widest font-black opacity-60">/ 2500 kcal</span>
+                </div>
+            </div>
+            <p class="text-muted mt-8 text-xs font-bold uppercase tracking-widest group-focus-within:text-orange-500/80 transition" id="msg-calories">Click to type</p>
+        </div>
+
+        <!-- Sleep -->
+        <div class="glass-card metric-card group cursor-text" onclick="document.getElementById('input-sleep').focus()">
+            <h3 class="flex items-center gap-2 text-purple-600 uppercase tracking-widest text-[0.65rem] font-black mb-8">
+                <i class="ph-bold ph-moon text-base"></i> Sleep (Hrs)
+            </h3>
+            <div class="ring-container" id="ring-sleep" style="--fill-color: var(--color-dusty-lavender); --percentage: 0%;">
+                <div class="ring-content flex flex-col items-center">
+                    <input type="number" step="0.1" id="input-sleep" value="0" class="block text-3xl font-bold text-main bg-transparent text-center w-28 outline-none border-b border-transparent focus:border-purple-400/50 transition mb-1" placeholder="0">
+                    <span class="text-[0.6rem] text-muted uppercase tracking-widest font-black opacity-60">/ 8h Goal</span>
+                </div>
+            </div>
+            <p class="text-muted mt-8 text-xs font-bold uppercase tracking-widest group-focus-within:text-purple-500/80 transition" id="msg-sleep">Click to type</p>
+        </div>
+
+        <!-- Hydration -->
+        <div class="glass-card metric-card group cursor-text" onclick="document.getElementById('input-water').focus()">
+            <h3 class="flex items-center gap-2 text-cyan-600 uppercase tracking-widest text-[0.65rem] font-black mb-8">
+                <i class="ph-bold ph-drop text-base"></i> Hydration (L)
+            </h3>
+            <div class="ring-container" id="ring-water" style="--fill-color: #2563eb; --percentage: 0%;">
+                <div class="ring-content flex flex-col items-center">
+                    <input type="number" step="0.1" id="input-water" value="0" class="block text-3xl font-bold text-main bg-transparent text-center w-28 outline-none border-b border-transparent focus:border-cyan-400/50 transition mb-1" placeholder="0">
+                    <span class="text-[0.6rem] text-muted uppercase tracking-widest font-black opacity-60">/ 3.0 L Goal</span>
+                </div>
+            </div>
+            <p class="text-muted mt-8 text-xs font-bold uppercase tracking-widest group-focus-within:text-cyan-500/80 transition" id="msg-water">Click to type</p>
+        </div>
+
+    </div>
+
+    <!-- Bottom Section: Monthly Pie Grid -->
+    <div class="w-full max-w-7xl mt-32 glass-card chart-card flex flex-col items-center">
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-bold tracking-tight mb-3 font-display">Monthly Goal Map</h2>
+            <p class="text-gray-400 text-sm max-w-md mx-auto">Click any day above to sync the editor. Hover indices below to trigger their physical gravity animation.</p>
+        </div>
+        
+        <div class="month-stage" id="monthStage">
+            <div class="month-grid" id="monthGrid">
+                <!-- 30 Pies generated by JS -->
+            </div>
+        </div>
+
+        <div class="mt-16 flex gap-8 text-[0.6rem] uppercase tracking-[0.3em] font-black opacity-30">
+            <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full" style="background:#3b82f6"></div> Steps</div>
+            <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full" style="background:#f87171"></div> Calories</div>
+            <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full" style="background:#8b5cf6"></div> Sleep</div>
+            <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full" style="background:#2563eb"></div> Water</div>
+        </div>
+    </div>
+
+    <!-- Tooltip -->
+    <div id="pieTooltip" class="pie-tooltip"></div>
+
+
+    <script src="health.js" defer></script>
+    <script src="cursor.js"></script>
+</body>
+</html>
+
+

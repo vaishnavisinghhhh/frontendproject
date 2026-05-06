@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Therapeutic Journal | 30 Days to Thrive</title>
+
+    <!-- Premium Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/gsap@3/dist/gsap.min.js"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+    <!-- Custom Theme -->
+    <link rel="stylesheet" href="theme.css">
+
+    <style>
+        @font-face {
+            font-family: 'TAN Meringue';
+            src: url('TAN-Meringue-Font/TAN-Meringue-Font/TAN MERINGUE.woff2') format('woff2'),
+                 url('TAN-Meringue-Font/TAN-Meringue-Font/TAN MERINGUE.ttf') format('truetype');
+            font-weight: normal; font-style: normal; font-display: swap;
+        }
+
+        .font-display { font-family: 'TAN Meringue', 'Outfit', sans-serif; }
+        .font-pencil { font-family: 'Cormorant Garamond', serif; }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            opacity: 0; 
+        }
+
+        /* Subtle Paper Grain Overlay */
+        .page-texture {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            opacity: 0.03;
+            background-image: url('https://www.transparenttextures.com/patterns/natural-paper.png');
+            z-index: 50;
+        }
+
+        /* iPad Notes Layout */
+        .app-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+        }
+
+        /* Left Sidebar: Notes list */
+        .sidebar {
+            width: 320px;
+            background: rgba(255, 255, 255, 0.3);
+            border-right: 1px solid var(--border-soft);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            transition: width 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-soft);
+        }
+
+        .notes-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+
+        .note-item {
+            padding: 16px;
+            margin-bottom: 8px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            background: transparent;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .note-item .delete-note {
+            opacity: 0;
+            color: #ccc;
+            transition: opacity 0.2s, color 0.2s;
+            padding: 4px;
+        }
+
+        .note-item:hover .delete-note { opacity: 1; }
+        .note-item .delete-note:hover { color: #ff5f56; }
+
+        .note-item:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .note-item.active {
+            background: white;
+            box-shadow: var(--shadow-light);
+        }
+
+        .note-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 15%; height: 70%; width: 4px;
+            background: var(--color-muted-peach);
+            border-radius: 0 4px 4px 0;
+        }
+
+        .note-content-wrapper { overflow: hidden; flex-grow: 1; }
+        .note-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text-main);
+        }
+
+        .note-preview {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            height: 1.2rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .note-date {
+            font-size: 0.75rem;
+            color: #bbb;
+            margin-top: 6px;
+        }
+
+        /* Right Panel: Active Editor */
+        .editor-container {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            background: transparent;
+            position: relative;
+        }
+
+        .editor-header {
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Toolbar Styling */
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tool-btn {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            color: #777;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .tool-btn:hover {
+            background: rgba(255, 255, 255, 0.8);
+            color: var(--text-muted);
+        }
+
+        .tool-btn.active {
+            color: #d84b7d; /* Soft accent pink-red */
+            background: white;
+        }
+
+        /* Color Bar */
+        .color-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 40%;
+            cursor: pointer;
+            transition: transform 0.2s;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .color-dot:hover { transform: scale(1.3); }
+
+        .custom-color-btn {
+            position: relative;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red);
+            cursor: pointer;
+        }
+
+        .custom-color-input {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        /* The Paper Area */
+        .paper-area {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 60px 10%;
+            display: flex;
+            justify-content: center;
+            transition: background 0.4s ease;
+        }
+
+        /* Ruled Paper / Dotted Grid Effect */
+        .paper {
+            width: 100%;
+            max-width: 800px;
+            min-height: 100%;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.03);
+            padding: 60px 80px;
+            position: relative;
+            outline: none;
+            font-size: 1.1rem;
+            line-height: 1.9;
+            color: #555;
+            transition: transform 0.4s, box-shadow 0.4s;
+
+            /* Ruled line effect */
+            background-image: linear-gradient(#f0f0f0 1px, transparent 1px);
+            background-size: 100% 1.9rem;
+            background-attachment: local;
+        }
+
+        .paper:focus {
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.06);
+            transform: translateY(-2px);
+        }
+
+        /* Focus Mode Dimming */
+        .focus-dimmer {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.25);
+            opacity: 0;
+            pointer-events: none;
+            z-index: 5;
+            transition: opacity 0.4s ease;
+        }
+
+        body.focus-mode .focus-dimmer {
+            opacity: 1;
+        }
+        
+        body.focus-mode .paper {
+            z-index: 10;
+            background-image: none; /* Focus without lines */
+        }
+
+        /* Mood Selector in Sidebar */
+        .mood-selector {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 12px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 10px;
+        }
+
+        .mood-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .mood-dot.active { transform: scale(1.3); border-color: rgba(0, 0, 0, 0.1); }
+        .mood-dot.peach { background-color: var(--color-muted-peach); }
+        .mood-dot.lavender { background-color: var(--color-dusty-lavender); }
+        .mood-dot.blue { background-color: var(--color-soft-sky-blue); }
+        .mood-dot.sage { background-color: var(--color-sage-green); }
+
+        /* Custom Scrollbar for soft look */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.05); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 0, 0.1); }
+
+        /* Go Back Button */
+        .back-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #9ca3af;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: all 0.3s;
+            cursor: pointer;
+            margin-bottom: 2rem;
+        }
+
+        .back-btn:hover { 
+            color: #111; 
+            transform: translateX(-5px);
+        }
+
+        /* Animations */
+        .fade-in-text { animation: softFadeIn 0.8s ease forwards; }
+        @keyframes softFadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { width: 0; overflow: hidden; }
+            .paper-area { padding: 20px; }
+            .paper { padding: 40px 30px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="page-texture"></div>
+    <div class="focus-dimmer"></div>
+
+    <div class="app-container">
+        
+        <!-- Sidebar: Note List -->
+        <aside class="sidebar">
+            <div class="sidebar-header pt-20">
+                <!-- Consistent Back Button -->
+                <div onclick="window.location.href='dashboard.html'" class="back-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                    </svg>
+                    Back
+                </div>
+
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="font-display text-2xl">Notes</h2>
+                    <button id="add-note-btn" class="tool-btn" title="New Note">
+                        <i class="ph-bold ph-note-pencil"></i>
+                    </button>
+                </div>
+                
+                <!-- Mood selector -->
+                <p class="text-[0.7rem] uppercase tracking-widest text-muted opacity-50 mb-2">Internal Energy</p>
+                <div class="mood-selector">
+                    <div class="mood-dot peach" data-mood="peach" title="Warmth"></div>
+                    <div class="mood-dot lavender" data-mood="lavender" title="Peace"></div>
+                    <div class="mood-dot blue" data-mood="blue" title="Calm"></div>
+                    <div class="mood-dot sage" data-mood="sage" title="Growth"></div>
+                </div>
+            </div>
+
+            <div class="notes-list" id="notes-list">
+                <!-- Notes will be injected here -->
+            </div>
+
+        </aside>
+
+        <!-- Main Editor -->
+        <main class="editor-container">
+            
+            <header class="editor-header">
+                <div class="flex items-center gap-6">
+                    <div id="note-date-full" class="text-xs font-medium text-[#aaa] uppercase tracking-widest">
+                        Wednesday, March 25, 2026
+                    </div>
+                </div>
+
+                <div class="toolbar" id="rich-toolbar">
+                    <button class="tool-btn" onclick="execCmd('bold')" title="Bold"><i class="ph ph-text-b"></i></button>
+                    <button class="tool-btn" onclick="execCmd('italic')" title="Italic"><i class="ph ph-text-italic"></i></button>
+                    <button class="tool-btn" onclick="execCmd('underline')" title="Underline"><i class="ph ph-text-underline"></i></button>
+                    <div class="w-px h-4 bg-black/5 mx-2"></div>
+                    <button class="tool-btn" id="checklist-btn" onclick="insertChecklist()" title="Checklist"><i class="ph ph-check-square"></i></button>
+                    <button class="tool-btn" onclick="execCmd('insertUnorderedList')" title="List"><i class="ph ph-list-bullets"></i></button>
+                    <div class="w-px h-4 bg-black/5 mx-2"></div>
+                    
+                    <!-- Text Color Bar -->
+                    <div class="flex items-center gap-2 bg-black/5 px-3 py-1.5 rounded-full">
+                        <button class="color-dot bg-[#4A4A4A]" onmousedown="event.preventDefault(); execCmd('foreColor', '#4A4A4A')" title="Default Grey"></button>
+                        <button class="color-dot bg-[#FFD1DC]" onmousedown="event.preventDefault(); execCmd('foreColor', '#FFD1DC')" title="Pastel Pink"></button>
+                        <button class="color-dot bg-[#E6E6FA]" onmousedown="event.preventDefault(); execCmd('foreColor', '#E6E6FA')" title="Lavender"></button>
+                        <button class="color-dot bg-[#B9E2F5]" onmousedown="event.preventDefault(); execCmd('foreColor', '#B9E2F5')" title="Sky Blue"></button>
+                        <button class="color-dot bg-[#D1E8E2]" onmousedown="event.preventDefault(); execCmd('foreColor', '#D1E8E2')" title="Sage Green"></button>
+                        <div class="w-px h-3 bg-black/10 mx-1"></div>
+                        <div class="custom-color-btn" title="Custom Color">
+                            <input type="color" class="custom-color-input" oninput="execCmd('foreColor', this.value)">
+                        </div>
+                    </div>
+
+                    <div class="w-px h-4 bg-black/5 mx-2"></div>
+                    <button class="tool-btn" id="focus-btn" title="Focus Mode"><i class="ph ph-eye-closed"></i></button>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <span id="save-status" class="text-[0.65rem] font-mono text-[#ccc] uppercase tracking-[0.2em]">Synced</span>
+                    <button class="tool-btn text-xs font-semibold px-4 w-auto hover:bg-[#eee]" onclick="window.location.href='index.html'">Index</button>
+                </div>
+            </header>
+
+            <div class="paper-area" id="scroll-target">
+                <article id="editor" class="paper" contenteditable="true" 
+                         data-placeholder="How are you feeling today?">
+                    <!-- Text content goes here -->
+                </article>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Custom Cursor -->
+    <script src="cursor.js"></script>
+    <script src="journal.js" defer></script>
+</body>
+</html>

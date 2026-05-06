@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thirty Days to Thrive</title>
+
+    <!-- Premium Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,700;0,6..96,900;1,6..96,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Frameworks & Libraries -->
+    <!-- Removed GSAP dependencies for performance optimization -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    
+    <!-- Custom Theme -->
+    <link rel="stylesheet" href="theme.css">
+
+    <style>
+        /* TAN MERINGUE - loaded from local files */
+        @font-face {
+            font-family: 'TAN Meringue';
+            src: url('TAN-Meringue-Font/TAN-Meringue-Font/TAN MERINGUE.woff2') format('woff2'),
+                url('TAN-Meringue-Font/TAN-Meringue-Font/TAN MERINGUE.ttf') format('truetype'),
+                url('TAN-Meringue-Font/TAN-Meringue-Font/TAN MERINGUE.otf') format('opentype');
+            font-weight: normal; font-style: normal; font-display: swap;
+        }
+
+        /* 🌄 SOFT GRADIENT BACKGROUND */
+        .parallax-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 130%;
+            background: linear-gradient(180deg, var(--color-warm-white) 0%, var(--color-butter-yellow) 100%);
+            z-index: -2;
+        }
+
+        /* 🌑 SUBTLE OVERLAY */
+        body::after {
+            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, transparent, rgba(255, 255, 255, 0.4));
+            z-index: -1; pointer-events: none;
+        }
+
+        /* ----- PURE CSS ANIMATIONS (REPLACING JS) ----- */
+        
+        /* 1. Body Load Animation */
+        @keyframes clearFog {
+            0% { opacity: 0.6; filter: blur(5px); }
+            100% { opacity: 1; filter: blur(0px); }
+        }
+        body {
+            animation: clearFog 1.6s ease-out forwards;
+        }
+
+        /* 2. Hero Elements Animation */
+        @keyframes fadeUp {
+            0% { opacity: 0; transform: translateY(var(--anim-y, 50px)); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .animate-hero { --anim-y: 50px; animation: fadeUp 1s ease-out 0.2s both; }
+        .animate-sub { --anim-y: 30px; animation: fadeUp 1s ease-out 0.5s both; }
+
+        /* 3. Reveal on Scroll (triggered by minimal IntersectionObserver) */
+        .reveal-section {
+            opacity: 0; transform: translateY(30px); filter: blur(4px);
+            transition: opacity 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                transform 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                filter 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .reveal-section.visible {
+            opacity: 1; transform: translateY(0); filter: blur(0px);
+        }
+
+        /* 4. Scroll-Triggered Parallax & Sticky Scale (Modern CSS) */
+        @supports (animation-timeline: scroll()) {
+            .parallax-bg {
+                animation: parallaxShift linear both;
+                animation-timeline: scroll();
+            }
+            @keyframes parallaxShift {
+                to { transform: translateY(-20%); }
+            }
+        }
+        
+        @supports (animation-timeline: view()) {
+            .sticky-text {
+                animation: scaleFade linear both;
+                animation-timeline: view();
+                animation-range: exit 0% exit 100%;
+            }
+            @keyframes scaleFade {
+                to { transform: scale(1.5); opacity: 0; }
+            }
+        }
+
+        /* FLIP CARD STYLES */
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+        .group:hover .group-hover\:rotate-y-180 { transform: rotateY(180deg); }
+    </style>
+</head>
+
+<body class="bg-base overflow-x-hidden">
+
+    <div class="parallax-bg"></div>
+
+    <nav class="absolute top-6 left-0 w-full z-10 px-8 flex items-center justify-between font-sans">
+        <!-- Left Links -->
+        <div class="flex items-center gap-8 text-[0.7rem] font-semibold tracking-widest text-gray-500">
+            <a href="index.html" class="hover:text-gray-900 transition-colors uppercase">Home</a>
+            <a href="dashboard.html" class="hover:text-gray-900 transition-colors uppercase">Dashboard</a>
+            <a href="sanctuary.html" class="hover:text-gray-900 transition-colors uppercase">Sanctuary</a>
+            <a href="journal.html" class="hover:text-gray-900 transition-colors uppercase">Journal</a>
+        </div>
+
+        <!-- Center Text -->
+        <div class="absolute left-1/2 -translate-x-1/2 text-[0.7rem] font-bold tracking-[0.15em] text-gray-700 uppercase">
+            Hi, Guest
+        </div>
+
+        <!-- Right Buttons -->
+        <div class="flex items-center gap-3">
+            <button onclick="transitionTo('auth.html')"
+                class="px-6 py-2.5 rounded-full text-[0.7rem] uppercase tracking-widest font-semibold transition-all duration-300 bg-transparent hover:bg-gray-50 text-gray-500 hover:text-gray-800 border border-gray-200">
+                Sign In / Sign Up
+            </button>
+            <button onclick="transitionTo('subscription.html')"
+                class="px-6 py-2.5 rounded-full text-[0.7rem] uppercase tracking-widest font-semibold transition-all duration-300 bg-transparent hover:bg-gray-50 text-gray-500 hover:text-gray-800 border border-gray-200">
+                Explore Premium
+            </button>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="h-screen flex flex-col justify-center items-center text-center px-6 pt-20">
+        <div class="header-block">
+            <!-- Added CSS animation classes `.animate-hero` -->
+            <h1 class="font-display text-6xl md:text-8xl font-bold tracking-tight animate-hero" style="letter-spacing: -0.02em;">
+                30 Days to<br>Thrive
+            </h1>
+        </div>
+
+        <!-- Added CSS animation classes `.animate-sub` -->
+        <p class="font-editorial mt-6 text-muted max-w-xl text-xl md:text-2xl italic font-light leading-relaxed animate-sub">
+            Transform your body, mind, and habits in just one month.
+        </p>
+
+        <button onclick="transitionTo('dashboard.html')" 
+                class="mt-14 group relative overflow-hidden bg-gray-900 text-white px-8 py-4 rounded-full uppercase tracking-[0.25em] text-xs font-semibold transition-all duration-500 hover:scale-[1.03] shadow-[0_15px_40px_rgba(0,0,0,0.08)] hover:shadow-[0_20px_50px_rgba(0,0,0,0.15)] flex items-center justify-center mx-auto">
+            <span class="relative z-10 flex items-center gap-4">
+                Start the Challenge
+                <i class="ph ph-arrow-right text-lg transform group-hover:translate-x-2 transition-transform duration-500"></i>
+            </span>
+            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]"></div>
+        </button>
+    </section>
+
+    <!-- FLIP CARDS SECTION -->
+    <section class="py-32 px-6 text-center reveal-section">
+        <div class="max-w-7xl mx-auto">
+            <span class="text-[0.7rem] uppercase tracking-[0.25em] font-semibold text-muted opacity-80 mb-4 block">
+                Shift Your Perspective
+            </span>
+            <h2 class="font-editorial text-4xl md:text-5xl font-semibold mb-16 text-gray-800 tracking-tight">Reframe Your Mind</h2>
+
+            <!-- Cards rendered via JS to reduce bloat -->
+            <div id="flipCardsContainer" class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto perspective-1000"></div>
+        </div>
+    </section>
+
+    <!-- UNDERSTANDING YOUR MIND SECTION (VOGUE EDITORIAL) -->
+    <section class="py-32 px-6 relative bg-[#fcfaf7] border-t border-gray-200">
+        <div class="max-w-[1200px] mx-auto">
+
+            <div class="text-center md:text-left mb-20 reveal-section border-b border-gray-300 pb-8 flex flex-col md:flex-row items-end justify-between">
+                <div>
+                    <span class="text-[0.65rem] uppercase tracking-[0.4em] font-semibold text-gray-400 block mb-6">Volume 1. Shift Your Perspective</span>
+                    <h2 class="font-display text-5xl md:text-8xl font-bold text-gray-900 tracking-tighter uppercase" style="line-height: 0.85;">
+                        UNDERSTANDING<br>YOUR MIND
+                    </h2>
+                </div>
+                <!-- Line extension -->
+                <div class="hidden md:block w-32 h-[1px] bg-gray-900 mb-6 flex-shrink-0"></div>
+            </div>
+
+            <!-- Asymmetrical Grid Layout -->
+            <div class="grid md:grid-cols-12 gap-16 md:gap-24 relative reveal-section">
+
+                <!-- Intro Column (Left) -->
+                <div class="md:col-span-5 flex flex-col justify-between">
+                    <p class="font-editorial text-3xl md:text-4xl font-light text-gray-800 italic leading-snug mb-12" style="letter-spacing: -0.01em;">
+                        Not everything you feel is random. Your mind is trying to protect you, even when it feels confusing.
+                    </p>
+
+                    <!-- Burnout Box -->
+                    <div class="bg-white p-10 md:p-14 border border-gray-200 shadow-sm mt-8 relative">
+                        <span class="absolute top-2 left-6 font-display text-8xl text-gray-100 leading-none font-bold">“</span>
+                        <h3 class="font-sans text-xs font-bold tracking-widest text-gray-400 uppercase mb-4 relative z-10">Burnout</h3>
+                        <p class="font-sans text-[0.85rem] font-light text-gray-600 leading-[1.8] mb-4 relative z-10 text-justify">
+                            Not sadness. Not exactly. More like numbness. Like you’re there, but not fully. High-functioning exhaustion doesn't always look tired.
+                        </p>
+                        <p class="font-sans text-[0.85rem] font-light text-gray-600 leading-[1.8] relative z-10 text-justify">
+                            Sometimes, the solution isn’t doing more. It’s finally allowing yourself to do less.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Main Content (Multi-column right) -->
+                <div class="md:col-span-7">
+
+                    <h3 class="font-editorial text-4xl font-bold text-gray-900 mb-8 font-display italic">Brain Fog & Neurochemistry</h3>
+
+                    <div class="font-sans text-[0.95rem] font-light text-gray-700 leading-[1.85] mb-8 columns-1 md:columns-2 gap-10 text-justify">
+                        <span class="float-left font-display text-8xl font-bold text-gray-900 leading-[0.7] pt-2 pr-5 pb-1 -ml-1">T</span>
+                        hat heaviness in your head, the lack of focus, the constant drifting—it isn’t laziness. It’s often your brain slowing things down precisely because it is overwhelmed. There is simply too much input, and far too little rest taking place beneath the surface. Clarity does not arrive from forcing yourself harder towards the edge of exhaustion; rather, it blooms naturally from creating intentional, undisturbed space.
+                        <br><br>
+                        Your emotions aren’t just fleeting thoughts; they are deeply rooted in physical chemistry too. Serotonin helps you feel stable, grounded, and okay in your environment. Oxytocin makes you feel safe, connected, and less profoundly alone.
+                        <br><br>
+                        And the most beautiful part of this architecture? Small, everyday things shift them. Direct sunlight on your face, slow movement, a calm conversation, or even choosing to breathe slower.
+                    </div>
+
+                    <div class="w-full h-[1px] bg-gray-200 my-12"></div>
+
+                    <h3 class="font-sans text-xs font-bold text-gray-500 mb-6 uppercase tracking-[0.2em] relative">
+                        <span class="absolute -left-6 top-1/2 w-4 h-[1px] bg-gray-400"></span>
+                        Small Habits, Real Change
+                    </h3>
+
+                    <p class="font-sans text-[0.95rem] font-light text-gray-700 leading-[1.85] mb-8 text-justify">
+                        You don’t need a complete life reset or an aggressive, punishing new routine. A few gentle habits, repeated daily, can slowly quiet the deafening noise in your mind. It won't happen instantly, but it will happen steadily. Healing rarely looks dramatic—it looks like consistency on the days you really don’t feel like trying.
+                    </p>
+
+                    <!-- Asymmetrical Ending -->
+                    <div class="mt-24 ml-auto md:w-4/5 border-l-2 border-gray-900 md:pl-10 pl-6 py-2">
+                        <p class="font-display text-3xl md:text-5xl text-gray-900 font-medium italic" style="line-height: 1.1; letter-spacing: -0.02em;">
+                            You don’t have to fix everything today.<br>Just begin, gently.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- STICKY TEXT -->
+    <section class="h-[200vh] relative">
+        <div class="sticky top-0 h-screen flex items-center justify-center">
+            <h2 class="font-display text-4xl md:text-6xl font-bold sticky-text text-center" style="letter-spacing: -0.02em;">
+                This is your safe space. Breathe.
+            </h2>
+        </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="py-32 text-center reveal-section">
+        <h2 class="font-editorial text-4xl md:text-5xl font-semibold mb-6">Ready to elevate your life?</h2>
+        <button onclick="transitionTo('subscription.html')" class="btn-primary">
+            Explore Premium
+        </button>
+    </section>
+
+    <footer class="py-10 text-center text-muted">
+        © 2026 Thirty Days to Thrive
+    </footer>
+
+    <!-- FOCUS OVERLAY -->
+    <div id="focusOverlay" class="fixed inset-0 z-[99999] opacity-0 pointer-events-none transition-opacity duration-500 bg-black/60 backdrop-blur-md flex items-center justify-center p-6">
+        <div id="focusContent" class="w-full max-w-md h-96 transition-all duration-[600ms] ease-out scale-95 opacity-0"></div>
+        <button id="closeFocus" class="absolute top-8 right-8 text-white/50 hover:text-white transition-colors p-4">
+            <i class="ph-light ph-x text-4xl"></i>
+        </button>
+    </div>
+
+    <!-- EMOTIONAL TRANSITION OVERLAY -->
+    <div id="emotionalTransition" class="fixed inset-0 z-[999999] opacity-0 pointer-events-none bg-base flex flex-col items-center justify-center transition-opacity duration-1000" style="background: linear-gradient(180deg, var(--color-warm-white) 0%, var(--color-butter-yellow) 100%);">
+        <h2 id="emotionalText" class="font-editorial text-3xl md:text-5xl text-gray-700 italic font-light tracking-wide text-center px-6 transition-all duration-[1500ms] ease-out" style="opacity: 0; transform: translateY(20px) scale(0.98);"></h2>
+    </div>
+
+    <script src="index.js" defer></script>
+</body>
+</html>

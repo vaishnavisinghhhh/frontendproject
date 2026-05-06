@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Dashboard | 30 Days to Thrive</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- GSAP + ScrollTrigger -->
+    <script src="https://unpkg.com/gsap@3/dist/gsap.min.js"></script>
+    <script src="https://unpkg.com/gsap@3/dist/ScrollTrigger.min.js"></script>
+
+    <!-- Custom Theme -->
+    <link rel="stylesheet" href="theme.css">
+
+    <style>
+        @font-face {
+            font-family: 'TAN Meringue';
+            src: url('TAN-Meringue-Font/TAN-Meringue-Font/TAN MERINGUE.woff2') format('woff2'),
+                 url('TAN-Meringue-Font/TAN-Meringue-Font/TAN MERINGUE.ttf') format('truetype');
+            font-weight: normal; font-style: normal; font-display: swap;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg-base);
+            min-height: 100vh;
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, sans-serif;
+            overflow-x: hidden;
+            opacity: 0;
+        }
+
+        /* 🌄 BOLD SOLID BACKGROUND */
+        .parallax-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%; 
+            background: var(--color-butter-yellow);
+            z-index: -2;
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.8));
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        /* ═══════════════════════════════
+           ANIMATED BACKGROUND SYSTEM (REFINED)
+        ═══════════════════════════════ */
+
+        /* Layer 1: Base image (as fixed overlay for animation) */
+        .bg-layer { position: fixed; inset: 0; z-index: -1; overflow: hidden; background: transparent; }
+
+        /* Layer 3: Foreground drift */
+        .bg-drift {
+            position: fixed; inset: -20px; z-index: -2;
+            width: calc(100% + 40px); height: calc(100% + 40px);
+            object-fit: cover; object-position: center;
+            opacity: 0.05;
+            mix-blend-mode: multiply;
+            will-change: transform;
+            animation: drift 15s ease-in-out infinite;
+        }
+
+        @keyframes drift {
+            0%, 100% { transform: translate(0, 0) scale(1.12); }
+            25%      { transform: translate(8px, -14px) scale(1.13); }
+            50%      { transform: translate(-5px, -18px) scale(1.12); }
+            75%      { transform: translate(6px, -8px) scale(1.11); }
+        }
+
+        /* Layer 4: Moving light sweep */
+        .bg-light {
+            position: absolute; inset: 0; z-index: 3;
+            pointer-events: none;
+            background: linear-gradient(
+                115deg,
+                transparent 0%,
+                transparent 35%,
+                rgba(255,255,255,0.4) 45%,
+                rgba(255,255,255,0.6) 50%,
+                rgba(255,255,255,0.4) 55%,
+                transparent 65%,
+                transparent 100%
+            );
+            background-size: 300% 100%;
+            animation: lightSweep 10s ease-in-out infinite;
+        }
+
+        @keyframes lightSweep {
+            0%, 100% { background-position: 150% 0; }
+            50%      { background-position: -50% 0; }
+        }
+
+        /* Layer 5: Glow pulse */
+        .bg-glow {
+            position: absolute; z-index: 2;
+            top: 40%; left: 50%;
+            width: 600px; height: 600px;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(255, 244, 194, 0.3) 0%, transparent 70%);
+            pointer-events: none;
+            animation: glowPulse 8s ease-in-out infinite;
+        }
+
+        @keyframes glowPulse {
+            0%, 100% { opacity: 0.4; transform: translate(-50%, -50%) scale(1); }
+            50%      { opacity: 1;   transform: translate(-50%, -50%) scale(1.2); }
+        }
+
+        /* Layer 6: Particle canvas */
+        #particleCanvas {
+            position: absolute; inset: 0; z-index: 4;
+            pointer-events: none;
+            width: 100%; height: 100%;
+        }
+
+        /* ═══════════════════════════════
+           PAGE STRUCTURE
+        ═══════════════════════════════ */
+        .page { position: relative; z-index: 5; min-height: 100vh; }
+
+        .hero {
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: flex-start;
+            padding: 8rem 1.5rem 5rem;
+        }
+
+        .hero-title {
+            line-height: 1.35;
+            padding-top: 0.5rem; /* prevent top clipping of tall fonts */
+            margin-bottom: 1.25rem;
+        }
+
+        /* ═══════════════════════════════
+           BACK BUTTON
+        ═══════════════════════════════ */
+        .back-btn {
+            position: fixed; top: 2rem; left: 2rem;
+            color: var(--text-muted);
+            font-size: 0.78rem; font-weight: 500;
+            display: flex; align-items: center; gap: 0.4rem;
+            transition: color 0.3s, transform 0.3s;
+            cursor: pointer; z-index: 60;
+            letter-spacing: 0.12em; text-transform: uppercase;
+        }
+        .back-btn:hover { color: var(--text-main); transform: translateX(-5px); }
+
+        /* ═══════════════════════════════
+           PORTAL STAGE
+        ═══════════════════════════════ */
+        .portal-stage { position: relative; width: 100%; max-width: 72rem; perspective: 1000px; }
+
+        .card-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
+        }
+        @media (max-width: 1024px) { .card-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 640px)  { .card-grid { grid-template-columns: 1fr; } }
+
+        /* ═══════════════════════════════
+           CARDS (Glass style from theme)
+        ═══════════════════════════════ */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-soft);
+            border-radius: 1.25rem;
+            padding: 2.25rem 2rem;
+            cursor: pointer; position: relative; overflow: hidden;
+            will-change: transform, opacity;
+            transform-style: preserve-3d;
+            box-shadow: var(--shadow-light);
+            transition: box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out, background 0.3s ease-in-out;
+        }
+
+        .card::before {
+            content: ""; position: absolute; inset: 0;
+            background: radial-gradient(480px circle at var(--mx,50%) var(--my,50%), rgba(255,255,255,0.8), transparent 40%);
+            opacity: 0; transition: opacity 0.35s; pointer-events: none; z-index: 0;
+        }
+        .card:hover::before { opacity: 1; }
+
+        .card:hover {
+            box-shadow: 0 28px 56px rgba(0,0,0,0.05), 0 0 50px rgba(255,255,255,0.4);
+            border-color: rgba(0,0,0,0.1); background: #E5F3FF;
+        }
+
+        .card > * { position: relative; z-index: 1; }
+
+        .card-line { width: 26px; height: 1px; background: rgba(0,0,0,0.1); margin-bottom: 1.2rem; }
+        .card-title { font-size: 1.4rem; font-weight: 600; margin-bottom: 0.55rem; letter-spacing: -0.01em; color: var(--text-main); }
+        .card-desc { color: var(--text-muted); font-size: 0.85rem; line-height: 1.65; font-weight: 300; }
+
+        @keyframes idleFloat {
+            0%, 100% { transform: translateY(0); }
+            50%      { transform: translateY(-3px); }
+        }
+        .card.floating { animation: idleFloat 7s ease-in-out infinite; }
+
+        .crumb a { color: var(--text-muted); transition: color 0.3s; }
+        .crumb a:hover { color: var(--text-main); }
+    </style>
+</head>
+
+<body>
+
+<!-- ═══ ANIMATED BACKGROUND LAYERS ═══ -->
+<div class="parallax-bg" id="parallax-bg"></div>
+<div class="bg-layer" id="bgLayer">
+
+    <!-- L4: Glow pulse -->
+    <div class="bg-glow"></div>
+
+    <!-- L5: Light sweep -->
+    <div class="bg-light"></div>
+
+    <!-- L6: Particles (canvas) -->
+    <canvas id="particleCanvas"></canvas>
+</div>
+
+<!-- ═══ PAGE CONTENT ═══ -->
+<div class="page">
+
+    <button onclick="exitPage('index.html')" class="back-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+             stroke-width="2" stroke="currentColor" class="w-4 h-4">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/>
+        </svg>
+        Back
+    </button>
+
+    <section class="hero">
+
+        <div class="text-center max-w-2xl mb-14 header-block">
+            <nav class="crumb text-xs font-medium mb-5 tracking-widest uppercase flex justify-center items-center gap-2">
+                <a href="index.html">Home</a>
+                <span class="text-gray-400">/</span>
+                <span style="color: #374151;">Dashboard</span>
+            </nav>
+            <h1 class="font-display text-5xl md:text-6xl lg:text-7xl font-bold mb-5 hero-title" style="letter-spacing:-0.025em;">
+                Your Toolkit
+            </h1>
+            <p class="font-editorial text-muted text-lg md:text-xl leading-relaxed italic font-light">
+                Select a path to continue your transformation.<br class="hidden md:block">
+                Consistency is the key to unlocking your true potential.
+            </p>
+        </div>
+
+        <div class="portal-stage" id="portalStage">
+            <div class="card-grid" id="cardGrid">
+
+                <div onclick="exitPage('bucket-list.html')" class="card portal-card">
+                    <div class="card-line" style="background: var(--color-muted-peach);"></div>
+                    <h3 class="font-editorial card-title">Bucket List</h3>
+                    <p class="card-desc">Curate your 30-day goals, check off daily habits, and stay aggressively committed.</p>
+                </div>
+
+                <div onclick="exitPage('journal.html')" class="card portal-card">
+                    <div class="card-line" style="background: var(--color-sage-green);"></div>
+                    <h3 class="font-editorial card-title">Daily Journal</h3>
+                    <p class="card-desc">Reflect on your thoughts, manifest your dreams, and maintain a log of your mindset journey.</p>
+                </div>
+
+                <div onclick="exitPage('gallery.html')" class="card portal-card">
+                    <div class="card-line" style="background: var(--color-dusty-lavender);"></div>
+                    <h3 class="font-editorial card-title">Photo Gallery</h3>
+                    <p class="card-desc">Document your physical transformation with daily progress shots to visually see the change.</p>
+                </div>
+
+                <div onclick="exitPage('health.html')" class="card portal-card">
+                    <div class="card-line" style="background: var(--color-muted-peach);"></div>
+                    <h3 class="font-editorial card-title">Health Tracker</h3>
+                    <p class="card-desc">Log and analyze your workouts, daily steps, macro-nutrients, and sleep schedules.</p>
+                </div>
+
+                <div onclick="exitPage('mindset.html')" class="card portal-card">
+                    <div class="card-line" style="background: var(--color-sage-green);"></div>
+                    <h3 class="font-editorial card-title">Mindset &amp; Zen</h3>
+                    <p class="card-desc">Access guided meditations, breathing exercises, and daily positive affirmations.</p>
+                </div>
+
+                <div onclick="exitPage('dual-you.html')" class="card portal-card">
+                    <div class="card-line" style="background: var(--color-dusty-lavender);"></div>
+                    <h3 class="font-editorial card-title">The Dual You</h3>
+                    <p class="card-desc">Consult the AI. Weigh your emotional and intellectual reasoning to gain clarity.</p>
+                </div>
+
+            </div>
+        </div>
+
+    </section>
+</div>
+
+<script src="dashboard.js" defer></script>
+
+<script src="cursor.js"></script>
+
+</body>
+</html>
